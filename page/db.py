@@ -5,10 +5,10 @@ import pandas as pd
 def get_connection():
     try:
         connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="Jagadish@24",
-            database="tiplati"
+            host="mysql-108.cjgk23oumdif.us-gov-west-1.rds.amazonaws.com",
+            user="vendor_portal_usr",
+            password="Summer2021",
+            database="vendor_portal"
         )
         return connection
     except mysql.connector.Error as err:

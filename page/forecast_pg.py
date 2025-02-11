@@ -11,8 +11,9 @@ def fetch_data():
         SELECT 
             DATE_FORMAT(timestamp, '%Y-%m') AS month, 
             COUNT(*) AS volume
-        FROM admin_service_
+        FROM admin_database
         WHERE timestamp IS NOT NULL
+          AND MONTH(timestamp) BETWEEN 1 AND 12  -- Filter for valid months
         GROUP BY DATE_FORMAT(timestamp, '%Y-%m')
         ORDER BY month;  
     """
@@ -25,6 +26,7 @@ def fetch_data():
     except Exception as e:
         st.error(f"Error fetching data: {e}")
         return pd.DataFrame()
+
 
 def forecast_with_growth(data, periods=11, growth_rate=0.05, fluctuation_range=(-0.1, 0.1)): 
     """Forecast volume with a fixed growth rate and random fluctuation."""

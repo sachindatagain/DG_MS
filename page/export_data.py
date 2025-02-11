@@ -8,7 +8,7 @@ def fetch_unique_values(column_name):
     cursor = connection.cursor(dictionary=True)
 
     try:
-        query = f"SELECT DISTINCT {column_name} FROM admin_database WHERE {column_name} IS NOT NULL"
+        query = f"SELECT DISTINCT {column_name} FROM admin_service_ WHERE {column_name} IS NOT NULL"
         cursor.execute(query)
         results = cursor.fetchall()
         return [row[column_name] for row in results]
@@ -24,7 +24,7 @@ def fetch_data_by_filters(email_address=None, OCR=None, payers=None, start_date=
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
     
-    query = "SELECT * FROM admin_database WHERE 1=1"
+    query = "SELECT * FROM admin_service_ WHERE 1=1"
     parameters = []
     
     if email_address:

@@ -21,14 +21,14 @@ def fetch_data(query, start_date, end_date):
 QUERIES = {
     "processing_tool_usage": """
         SELECT ocr, COUNT(*) AS user_count
-        FROM admin_database
+        FROM admin_service_
         WHERE ocr IS NOT NULL AND timestamp BETWEEN %s AND %s
         GROUP BY ocr
         ORDER BY user_count DESC;
     """,
     "top_payers": """
         SELECT payer, COUNT(*) AS payer_count
-        FROM admin_database
+        FROM admin_service_
         WHERE payer IS NOT NULL AND timestamp BETWEEN %s AND %s
         GROUP BY payer
         ORDER BY payer_count DESC
@@ -36,21 +36,21 @@ QUERIES = {
     """,
     "emea_distribution": """
         SELECT EMEA, COUNT(*) AS count
-        FROM admin_database
+        FROM admin_service_
         WHERE EMEA IS NOT NULL AND timestamp BETWEEN %s AND %s
         GROUP BY EMEA
         ORDER BY count DESC;
     """,
     "priority_distribution": """
         SELECT priority, COUNT(*) AS count
-        FROM admin_database
+        FROM admin_service_
         WHERE priority IS NOT NULL AND timestamp BETWEEN %s AND %s
         GROUP BY priority
         ORDER BY count DESC;
     """,
     "top_languages": """
         SELECT foreign_language AS language, COUNT(*) AS count
-        FROM admin_database
+        FROM admin_service_
         WHERE foreign_language IS NOT NULL AND timestamp BETWEEN %s AND %s
         GROUP BY foreign_language
         ORDER BY count DESC

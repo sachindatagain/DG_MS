@@ -11,7 +11,7 @@ def fetch_data():
         SELECT 
             DATE_FORMAT(timestamp, '%Y-%m') AS month, 
             COUNT(*) AS volume
-        FROM admin_database
+        FROM admin_service_
         WHERE timestamp IS NOT NULL
         GROUP BY DATE_FORMAT(timestamp, '%Y-%m')
         ORDER BY month;  

@@ -71,7 +71,7 @@ def generate_daily_forecast(monthly_forecast):
 def forecast_page():
     st.title("Total Volume Forecasting")
 
-    # data = fetch_data()
+    data = fetch_data()
     # st.write("Debug: Data Before Processing", data)
     # if data.empty:
     #     st.warning("⚠ No data available.")

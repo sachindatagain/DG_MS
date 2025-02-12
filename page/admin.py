@@ -66,7 +66,7 @@ def admin_page():
             st.error(f"An unexpected error occurred: {e}")
     elif section == "Forecast":
         try:
-            from page.forecast_pg import forecast_page
+            from page.forecast import forecast_page
             forecast_page()
         except ImportError as e:
             st.error(f"Error loading Forecast: {e}")

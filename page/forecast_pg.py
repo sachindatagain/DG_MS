@@ -26,7 +26,6 @@ def fetch_data():
         st.error(f"Error fetching data: {e}")
         return pd.DataFrame()
 
-
 def forecast_with_growth(data, periods=11, growth_rate=0.05, fluctuation_range=(-0.1, 0.1)): 
     """Forecast volume with a fixed growth rate and random fluctuation."""
     last_value = data.iloc[-1]

@@ -13,7 +13,6 @@ def fetch_data():
             COUNT(*) AS volume
         FROM admin_database
         WHERE timestamp IS NOT NULL
-          AND MONTH(timestamp) BETWEEN 1 AND 12  -- Filter for valid months
         GROUP BY DATE_FORMAT(timestamp, '%Y-%m')
         ORDER BY month;  
     """

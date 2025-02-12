@@ -1,4 +1,3 @@
-import datetime
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -12,7 +11,7 @@ def fetch_data():
         SELECT 
             DATE_FORMAT(timestamp, '%Y-%m') AS month, 
             COUNT(*) AS volume
-        FROM admin_service_
+        FROM admin_database
         WHERE timestamp IS NOT NULL
         GROUP BY DATE_FORMAT(timestamp, '%Y-%m')
         ORDER BY month;  
@@ -72,10 +71,9 @@ def forecast_page():
     st.title("Total Volume Forecasting")
 
     data = fetch_data()
-    # st.write("Debug: Data Before Processing", data)
-    # if data.empty:
-    #     st.warning("⚠ No data available.")
-    #     return
+    if data.empty:
+        st.warning("⚠ No data available.")
+        return
 
     st.subheader("📅 Historical Monthly Data")
     data['month_name'] = data['month'].dt.strftime('%B')  

@@ -34,10 +34,10 @@ def create_table_from_df(connection, df, table_name):
     cursor.execute(create_table_query)
     connection.commit()
 
-    # Insert data in batches of 5000 rows
+    # Insert data in batches of 10000 rows
     insert_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in df.columns])}) VALUES ({', '.join(['%s'] * len(df.columns))})"
     
-    batch_size = 10000 #5000
+    batch_size = 10000
     for i in range(0, len(df), batch_size):
         batch_data = [tuple(row.where(pd.notna(row), None)) for _, row in df.iloc[i:i + batch_size].iterrows()]
         cursor.executemany(insert_query, batch_data)
@@ -51,7 +51,7 @@ def insert_unique_data(connection, df, table_name):
     cursor = connection.cursor()
     df.columns = clean_column_names(df.columns)
 
-    batch_size = 10000 #5000
+    batch_size = 10000
     records_inserted = False
 
     for i in range(0, len(df), batch_size):
@@ -83,18 +83,14 @@ def import_csv_page():
     if uploaded_file is not None:
         try:
             df = pd.read_csv(uploaded_file, encoding="utf-8-sig")  # Handles BOM issues
-#           df = pd.read_csv(uploaded_file)
             df.index = range(1, len(df) + 1)
             df.columns = clean_column_names(df.columns)  # Clean column names
             
-            # Print actual columns for debugging
-            print("CSV Columns:", df.columns.tolist())
-
             # Check missing columns
             missing_columns = [col for col in REQUIRED_COLUMNS if col not in df.columns]
             if missing_columns:
                 st.error(f"Invalid file: Missing required columns - {', '.join(missing_columns)}")
-                return
+                return  # Stop execution immediately
             
             st.success("CSV file loaded successfully!")
             st.dataframe(df)  # Display DataFrame
@@ -113,7 +109,8 @@ def import_csv_page():
         except Exception as e:
             st.error(f"An error occurred while loading the CSV file: {e}")
     else:
-        st.warning("Please upload a CSV file.")  
+        st.warning("Please upload a CSV file.")
+
 
 
 

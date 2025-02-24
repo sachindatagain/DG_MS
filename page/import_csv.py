@@ -46,34 +46,36 @@ def create_table_from_df(connection, df, table_name):
     cursor.close()
     st.success("Data uploaded successfully.")
 
-# Function to insert unique data into existing table
+# Function to insert only unique data into the existing table
 def insert_unique_data(connection, df, table_name):
     cursor = connection.cursor()
     df.columns = clean_column_names(df.columns)
 
+    primary_key_col = df.columns[0]  # Assuming first column is unique identifier
+    df = df.drop_duplicates(subset=[primary_key_col])  # Remove duplicates within the uploaded file
+
+    # Fetch existing unique identifiers in the database
+    cursor.execute(f"SELECT `{primary_key_col}` FROM `{table_name}`")
+    existing_records = set(row[0] for row in cursor.fetchall())
+
+    # Filter only new records
+    new_records = df[~df[primary_key_col].isin(existing_records)]
+    if new_records.empty:
+        st.warning("No unique records inserted.")
+        cursor.close()
+        return
+
+    # Insert data in batches of 10000 rows
     batch_size = 10000
-    records_inserted = False
-
-    for i in range(0, len(df), batch_size):
-        batch_data = []
-        for _, row in df.iloc[i:i + batch_size].iterrows():
-            row = row.where(pd.notna(row), None)
-            check_query = f"SELECT 1 FROM `{table_name}` WHERE `{df.columns[0]}` = %s LIMIT 1"
-            cursor.execute(check_query, (row[0],))
-            if cursor.fetchone() is None:
-                batch_data.append(tuple(row))
-
-        if batch_data:
-            insert_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in df.columns])}) VALUES ({', '.join(['%s'] * len(df.columns))})"
-            cursor.executemany(insert_query, batch_data)
-            connection.commit()
-            records_inserted = True
+    insert_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in df.columns])}) VALUES ({', '.join(['%s'] * len(df.columns))})"
+    
+    for i in range(0, len(new_records), batch_size):
+        batch_data = [tuple(row.where(pd.notna(row), None)) for _, row in new_records.iloc[i:i + batch_size].iterrows()]
+        cursor.executemany(insert_query, batch_data)
+        connection.commit()
 
     cursor.close()
-    if records_inserted:
-        st.success("Unique data uploaded successfully.")
-    else:
-        st.warning("No unique records inserted.")
+    st.success("Unique data uploaded successfully.")
 
 # Import CSV page function
 def import_csv_page():
@@ -110,6 +112,121 @@ def import_csv_page():
             st.error(f"An error occurred while loading the CSV file: {e}")
     else:
         st.warning("Please upload a CSV file.")
+
+
+###################################################################################
+# import streamlit as st
+# import pandas as pd
+# from page.db import get_connection
+
+# # Predefined required columns
+# REQUIRED_COLUMNS = [
+#     "Timestamp", "Email Address", "OCR", "Bill Ref Code", "Track ID", "Annotation ID", "Document Type",
+#     "Matched Payee ID", "Payer", "Review", "Bill Lines", "Payee Name", "Invoice", "Invoice Date",
+#     "Invoice Due Date", "Terms", "PO", "Tax Amt", "Total Amt", "Currency", "Foreign Language",
+#     "Quality Analyst", "Invoice Pages", "Multiple Payees", "Comments", "PST to IST", "US Date",
+#     "IND Date", "IND Time", "Team", "Agent", "Unique ID", "Priority", "Month", "Hour", "EMEA"
+# ]
+
+# # Function to check if a table exists in the database
+# def table_exists(connection, table_name):
+#     cursor = connection.cursor()
+#     cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
+#     result = cursor.fetchone()
+#     cursor.close()
+#     return result is not None
+
+# # Function to clean column names
+# def clean_column_names(columns):
+#     return [col.strip().replace("\xa0", " ") for col in columns]  # Removes leading/trailing spaces & non-breaking spaces
+
+# # Function to create table from dataframe
+# def create_table_from_df(connection, df, table_name):
+#     cursor = connection.cursor()
+#     df.columns = clean_column_names(df.columns)
+
+#     # Create table with LONGTEXT columns
+#     columns = ", ".join([f"`{col}` LONGTEXT" for col in df.columns])
+#     create_table_query = f"CREATE TABLE `{table_name}` ({columns})"
+#     cursor.execute(create_table_query)
+#     connection.commit()
+
+#     # Insert data in batches of 10000 rows
+#     insert_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in df.columns])}) VALUES ({', '.join(['%s'] * len(df.columns))})"
+    
+#     batch_size = 10000
+#     for i in range(0, len(df), batch_size):
+#         batch_data = [tuple(row.where(pd.notna(row), None)) for _, row in df.iloc[i:i + batch_size].iterrows()]
+#         cursor.executemany(insert_query, batch_data)
+#         connection.commit()
+
+#     cursor.close()
+#     st.success("Data uploaded successfully.")
+
+# # Function to insert unique data into existing table
+# def insert_unique_data(connection, df, table_name):
+#     cursor = connection.cursor()
+#     df.columns = clean_column_names(df.columns)
+
+#     batch_size = 10000
+#     records_inserted = False
+
+#     for i in range(0, len(df), batch_size):
+#         batch_data = []
+#         for _, row in df.iloc[i:i + batch_size].iterrows():
+#             row = row.where(pd.notna(row), None)
+#             check_query = f"SELECT 1 FROM `{table_name}` WHERE `{df.columns[0]}` = %s LIMIT 1"
+#             cursor.execute(check_query, (row[0],))
+#             if cursor.fetchone() is None:
+#                 batch_data.append(tuple(row))
+
+#         if batch_data:
+#             insert_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in df.columns])}) VALUES ({', '.join(['%s'] * len(df.columns))})"
+#             cursor.executemany(insert_query, batch_data)
+#             connection.commit()
+#             records_inserted = True
+
+#     cursor.close()
+#     if records_inserted:
+#         st.success("Unique data uploaded successfully.")
+#     else:
+#         st.warning("No unique records inserted.")
+
+# # Import CSV page function
+# def import_csv_page():
+#     st.title("Import CSV Page")
+#     uploaded_file = st.file_uploader("Choose a CSV file to upload", type=["csv"])
+
+#     if uploaded_file is not None:
+#         try:
+#             df = pd.read_csv(uploaded_file, encoding="utf-8-sig")  # Handles BOM issues
+#             df.index = range(1, len(df) + 1)
+#             df.columns = clean_column_names(df.columns)  # Clean column names
+            
+#             # Check missing columns
+#             missing_columns = [col for col in REQUIRED_COLUMNS if col not in df.columns]
+#             if missing_columns:
+#                 st.error(f"Invalid file: Missing required columns - {', '.join(missing_columns)}")
+#                 return  # Stop execution immediately
+            
+#             st.success("CSV file loaded successfully!")
+#             st.dataframe(df)  # Display DataFrame
+            
+#             if st.button("Upload Data"):
+#                 connection = get_connection()
+#                 if connection:
+#                     table_name = uploaded_file.name.split('.')[0]
+#                     if table_exists(connection, table_name):
+#                         insert_unique_data(connection, df, table_name)
+#                     else:
+#                         create_table_from_df(connection, df, table_name)
+#                     connection.close()
+#                 else:
+#                     st.error("Could not connect to the database.")
+#         except Exception as e:
+#             st.error(f"An error occurred while loading the CSV file: {e}")
+#     else:
+#         st.warning("Please upload a CSV file.")
 
 
 

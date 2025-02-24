@@ -1,5 +1,5 @@
 mysql-connector-python
-pandas
+pandas==2.2.3
 numpy
 streamlit
 plotly

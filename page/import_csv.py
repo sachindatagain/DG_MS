@@ -80,6 +80,14 @@ def insert_data_in_batches(connection, df, table_name, batch_size=2000):
             cursor.executemany(insert_query, batch_data)
             connection.commit()
 
+# Function to generate and download CSV template
+def generate_csv_template():
+    df_template = pd.DataFrame(columns=REQUIRED_COLUMNS)
+    buffer = BytesIO()
+    df_template.to_csv(buffer, index=False, encoding="utf-8-sig")
+    buffer.seek(0)
+    return buffer
+    
 # Import CSV Page
 def import_csv_page():
     st.title("Import CSV Page")

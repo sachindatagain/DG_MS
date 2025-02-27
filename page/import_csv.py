@@ -54,7 +54,7 @@ def insert_unique_data(connection, df, table_name):
         cursor.execute(f"SELECT `{primary_key_col}` FROM `{table_name}`")
         existing_records = {str(row[0]).strip().lower() for row in cursor.fetchall()}  # Normalize DB records
 
-    st.write(f"Total existing records in DB: {len(existing_records)}")  # Debugging
+   # st.write(f"Total existing records in DB: {len(existing_records)}")  # Debugging
 
     # Identify truly new records
     new_records = df[~df[primary_key_col].isin(existing_records)]
@@ -69,7 +69,7 @@ def insert_unique_data(connection, df, table_name):
     st.success("Unique data uploaded.")
 
 # Function to insert data in batches
-def insert_data_in_batches(connection, df, table_name, batch_size=2000):
+def insert_data_in_batches(connection, df, table_name, batch_size=10000):
     insert_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in df.columns])}) VALUES ({', '.join(['%s'] * len(df.columns))})"
     
     with connection.cursor() as cursor:

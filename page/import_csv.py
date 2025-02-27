@@ -32,37 +32,44 @@ def create_table_from_df(connection, df, table_name):
         cursor.execute(create_query)
         connection.commit()
     insert_data_in_batches(connection, df, table_name)
-    st.success("Table created successfully.")
+    st.success("data uploaded successfully.")
 
 # Function to insert unique data
 def insert_unique_data(connection, df, table_name):
     df.columns = clean_column_names(df.columns)
+
+    # Fixing "Unique ID" as the primary key for uniqueness check
     primary_key_col = "Unique ID"
     
     if primary_key_col not in df.columns:
         st.error(f"Missing primary key column: {primary_key_col}")
         return
 
+    # Normalize data for comparison
     df[primary_key_col] = df[primary_key_col].astype(str).str.strip().str.lower()
-    df.drop_duplicates(subset=[primary_key_col], inplace=True)
+    df.drop_duplicates(subset=[primary_key_col], inplace=True)  # Remove duplicates within the CSV
 
+    # Fetch existing records from database
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT `{primary_key_col}` FROM `{table_name}`")
-        existing_records = {str(row[0]).strip().lower() for row in cursor.fetchall()}
+        existing_records = {str(row[0]).strip().lower() for row in cursor.fetchall()}  # Normalize DB records
 
+    st.write(f"Total existing records in DB: {len(existing_records)}")  # Debugging
+
+    # Identify truly new records
     new_records = df[~df[primary_key_col].isin(existing_records)]
     
-    st.write(f"records inserted: {len(new_records)}")
+    st.write(f"New unique records to insert: {len(new_records)}")  # Debugging
 
     if new_records.empty:
-        st.warning("records are not inserted.")
+        st.warning("records not inserted.")
         return
 
     insert_data_in_batches(connection, new_records, table_name)
-    st.success("data uploaded successfully.")
+    st.success("Unique data uploaded.")
 
 # Function to insert data in batches
-def insert_data_in_batches(connection, df, table_name, batch_size=10000):
+def insert_data_in_batches(connection, df, table_name, batch_size=2000):
     insert_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in df.columns])}) VALUES ({', '.join(['%s'] * len(df.columns))})"
     
     with connection.cursor() as cursor:
@@ -81,13 +88,13 @@ def generate_csv_template():
 
 # Import CSV Page
 def import_csv_page():
-    st.title("Import file")
+    st.title("Import Page")
     
     # Provide CSV download button
     st.download_button(
-        label="Download Template",
+        label="Download CSV Template",
         data=generate_csv_template(),
-        file_name=".csv",
+        file_name="managed_services.csv",
         mime="text/csv"
     )
     
@@ -103,9 +110,8 @@ def import_csv_page():
             if missing_columns:
                 st.error(f"Invalid file: Missing required columns - {', '.join(missing_columns)}")
                 return
-
-            st.write(f"Total records : {len(df)}")  # Display total records
-            st.success("CSV file loaded successfully!")
+            st.write(f"Total records : {len(df)}")  # Display total records            
+            st.success("file loaded successfully!")
             st.dataframe(df)
             
             if st.button("Upload Data"):
@@ -120,9 +126,9 @@ def import_csv_page():
                 else:
                     st.error("Could not connect to the database.")
         except Exception as e:
-            st.error(f"Error loading CSV: {e}")
+            st.error(f"Error loading : {e}")
     else:
-        st.warning("Please upload the file.")
+        st.warning("Please upload a file.")
 
 if __name__ == "__main__":
     import_csv_page()

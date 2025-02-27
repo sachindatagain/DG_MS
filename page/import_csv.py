@@ -69,7 +69,7 @@ def insert_unique_data(connection, df, table_name):
     st.success("Unique data uploaded.")
 
 # Function to insert data in batches
-def insert_data_in_batches(connection, df, table_name, batch_size=10000):
+def insert_data_in_batches(connection, df, table_name, batch_size=5000):
     insert_query = f"INSERT INTO `{table_name}` ({', '.join([f'`{col}`' for col in df.columns])}) VALUES ({', '.join(['%s'] * len(df.columns))})"
     
     with connection.cursor() as cursor:

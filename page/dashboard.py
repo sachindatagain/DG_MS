@@ -21,7 +21,7 @@ def fetch_data(query, start_date, end_date):
 QUERIES = {
     "processing_tool_usage": """
         SELECT OCR, COUNT(*) AS user_count
-        FROM admin_database
+        FROM admin_data
         WHERE OCR IS NOT NULL AND timestamp BETWEEN %s AND %s
         GROUP BY OCR
         ORDER BY user_count DESC;
@@ -130,6 +130,7 @@ def admin_dashboard():
 
 if __name__ == "__main__":
     admin_dashboard()
+
 
 # import datetime
 # import streamlit as st

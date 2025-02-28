@@ -40,6 +40,8 @@ def get_connection():
         st.error(f"Database connection lost: {err}. Reconnecting...")
         init_connection_pool()
         return connection_pool.get_connection()  # Retry with a new connection
+
+
 # import streamlit as st 
 # import mysql.connector
 # import pandas as pd

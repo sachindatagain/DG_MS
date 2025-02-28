@@ -13,8 +13,8 @@ def init_connection_pool():
 
             connection_pool = mysql.connector.pooling.MySQLConnectionPool(
                 pool_name="mypool",
-                pool_size=pool_size,  # Ensuring pool size is within the allowed range
-                pool_reset_session=True,
+                pool_size=pool_size,  
+                pool_reset_session=True,  # Clears session before reuse
                 host="mysql-108.cjgk23oumdif.us-gov-west-1.rds.amazonaws.com",
                 user="vendor_portal_usr",
                 password="Summer2021",
@@ -23,7 +23,6 @@ def init_connection_pool():
                 connect_timeout=30,
                 use_pure=True
             )
-#            st.success(f"Database connection pool initialized successfully with size {pool_size}.")
         except mysql.connector.Error as err:
             st.error(f"Error initializing connection pool: {err}")
 
@@ -37,17 +36,14 @@ def get_connection():
         conn = connection_pool.get_connection()
         if conn.is_connected():
             return conn
-        else:
-            st.warning("Database connection not active. Retrying...")
-            init_connection_pool()
-            return connection_pool.get_connection()
     except mysql.connector.errors.PoolError:
         st.error("Connection pool exhausted. Please try again later.")
-        return None
     except mysql.connector.Error as err:
         st.error(f"Database connection lost: {err}. Reconnecting...")
         init_connection_pool()
-        return connection_pool.get_connection()  # Retry with a new connection
+        return connection_pool.get_connection()  
+
+    return None
 
 def test_connection():
     """Test database connection to ensure credentials work."""
@@ -64,10 +60,11 @@ def test_connection():
         except mysql.connector.Error as err:
             st.error(f"Query execution error: {err}")
         finally:
-            conn.close()  # Always close the connection to return it to the pool
+            conn.close()  #  Always close connection after use
 
 if __name__ == "__main__":
     test_connection()  # Run connection test
+
 
 
 # import mysql.connector

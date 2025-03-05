@@ -9,6 +9,7 @@ def fetch_data(query, start_date, end_date):
     connection = get_connection()
     if not connection:
         return None, "Failed to connect to the database."
+    
     try:
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute(query, (start_date, end_date))
@@ -16,6 +17,8 @@ def fetch_data(query, start_date, end_date):
         return pd.DataFrame(result), None
     except Exception as e:
         return None, str(e)
+    finally:
+        connection.close()  # ✅ Ensures connection is always closed
 
 # SQL Queries with timestamp filtering
 QUERIES = {

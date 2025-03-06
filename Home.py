@@ -1,128 +1,53 @@
-# import streamlit as st
-# from page.db import get_connection
-# from page.audit_loger import log_user_login  # Only import log_user_login
-
-# # Function to apply background image at the top-left corner with a smaller size
-# def add_bg_from_url():
-#     st.markdown(
-#         f"""
-#         <style>
-#         .stApp {{
-#             background-image: url("https://datagainservices.com/wp-content/uploads/2024/01/datagain-logo.png");
-#             background-size: 150px; /* Adjust size as needed */
-#             background-repeat: no-repeat;
-#             background-position: top left;
-#             padding-top: 50px; /* Space to prevent content overlap */
-#         }}
-#         </style>
-#         """,
-#         unsafe_allow_html=True
-#     )
-
-# # Apply the background
-# add_bg_from_url()
-
-# # Apply custom CSS for background color and button color
-# st.markdown(
-#     """
-#     <style> 
-#         body {
-#             background-color: white;
-#         }
-#         .stButton>button {
-#             background-color: yellow !important;
-#             color: black;
-#             font-weight: bold;
-#         }
-#         .title {
-#             font-size: 2em;
-#             font-weight: bold;
-#         }
-#         .title .data {
-#             color: darkblue;
-#         }
-#         .title .gain {
-#             color: yellow;
-#         }
-#     </style>
-#     """,
-#     unsafe_allow_html=True
-# )
-
-# # Login function to authenticate user and fetch details
-# def login(email, password):
-#     connection = get_connection()
-#     if connection:
-#         try:
-#             query = "SELECT employee_name, email, role FROM employees WHERE email = %s AND password = %s;"
-#             cursor = connection.cursor()
-#             cursor.execute(query, (email.strip(), password.strip()))
-#             result = cursor.fetchone()
-#             cursor.close()
-#             connection.close()
-#             if result:
-#                 name, email, role = result  # Unpack all three values correctly
-
-#                 st.session_state.username = name
-#                 st.session_state.email = email
-#                 st.session_state.role = role
-
-#                 # ✅ Fix: Pass all required arguments correctly
-#                 log_user_login(email, name, role)
-
-#                 return role
-#             else:
-#                 return None
-#         except Exception as e:
-#             st.error(f"Error during login: {e}")
-#             return None
-#     return None
-
-# # Initialize session state if not already done
-# if "logged_in" not in st.session_state:
-#     st.session_state.logged_in = False
-# if "role" not in st.session_state:
-#     st.session_state.role = None
-# if "username" not in st.session_state:
-#     st.session_state.username = None
-# if "email" not in st.session_state:
-#     st.session_state.email = None
-# if "page" not in st.session_state:
-#     st.session_state.page = "Login"
-
-# # Handle page navigation
-# if st.session_state.page == "Login":
-#     st.markdown('<h1 class="title"><span class="data">Data</span><span class="gain">gain</span></h1>', unsafe_allow_html=True)
-
-#     email = st.text_input("Email")
-#     password = st.text_input("Password", type="password")
-#     login_button = st.button("Login")
-
-#     if login_button:
-#         role = login(email, password)
-#         if role == "admin":
-#             st.success(f"Logged in as Admin: {st.session_state.username}")
-#             st.session_state.logged_in = True
-#             st.session_state.page = "Admin"
-#         elif role == "user":
-#             st.success(f"Logged in as User: {st.session_state.username}")
-#             st.session_state.logged_in = True
-#             st.session_state.page = "User"
-#         else:
-#             st.error("Invalid credentials. Please try again.")
-
-# # Admin/User page redirection
-# elif st.session_state.page == "Admin" and st.session_state.role == "admin":
-#     import page.admin
-#     page.admin.admin_page()
-
-# elif st.session_state.page == "User" and st.session_state.role == "user":
-#     import page.user
-#     page.user.user_page()
-
-#__________________________________________________________________________________________________________________________________________________________________
 import streamlit as st
 from page.db import get_connection
+from page.audit_loger import log_user_login  # Only import log_user_login
+
+# Function to apply background image at the top-left corner with a smaller size
+def add_bg_from_url():
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("https://datagainservices.com/wp-content/uploads/2024/01/datagain-logo.png");
+            background-size: 150px; /* Adjust size as needed */
+            background-repeat: no-repeat;
+            background-position: top left;
+            padding-top: 50px; /* Space to prevent content overlap */
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Apply the background
+add_bg_from_url()
+
+# Apply custom CSS for background color and button color
+st.markdown(
+    """
+    <style> 
+        body {
+            background-color: white;
+        }
+        .stButton>button {
+            background-color: yellow !important;
+            color: black;
+            font-weight: bold;
+        }
+        .title {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .title .data {
+            color: darkblue;
+        }
+        .title .gain {
+            color: yellow;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Login function to authenticate user and fetch details
 def login(email, password):
@@ -130,16 +55,22 @@ def login(email, password):
     if connection:
         try:
             query = "SELECT employee_name, email, role FROM employees WHERE email = %s AND password = %s;"
-            cursor = connection.cursor() # middleman to send the query from streamlit to mysql server
-            cursor.execute(query, (email, password)) # execution is done here 
-            result = cursor.fetchone()  # Fetch the first row
+            cursor = connection.cursor()
+            cursor.execute(query, (email.strip(), password.strip()))
+            result = cursor.fetchone()
             cursor.close()
-            connection.close() # used to close connectivity made by connection.cursor() from streamlit to mysql server
+            connection.close()
             if result:
-                # Store user details in session state
-                st.session_state.username = result[0]  # Store the user's name
-                st.session_state.email = result[1]     # Store the user's email
-                return result[2]  # Return the user's role (admin/user)
+                name, email, role = result  # Unpack all three values correctly
+
+                st.session_state.username = name
+                st.session_state.email = email
+                st.session_state.role = role
+
+                # ✅ Fix: Pass all required arguments correctly
+                log_user_login(email, name, role)
+
+                return role
             else:
                 return None
         except Exception as e:
@@ -157,42 +88,111 @@ if "username" not in st.session_state:
 if "email" not in st.session_state:
     st.session_state.email = None
 if "page" not in st.session_state:
-    st.session_state.page = "Login"  # Default to login page
+    st.session_state.page = "Login"
 
 # Handle page navigation
 if st.session_state.page == "Login":
-    # Display login page
-    st.title("Login Page")
+    st.markdown('<h1 class="title"><span class="data">Data</span><span class="gain">gain</span></h1>', unsafe_allow_html=True)
 
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
     login_button = st.button("Login")
 
-    # Handle login attempt
     if login_button:
         role = login(email, password)
         if role == "admin":
             st.success(f"Logged in as Admin: {st.session_state.username}")
-            st.session_state.role = "admin"  # Store role in session state
-            st.session_state.logged_in = True  # Mark the user as logged in
-            st.session_state.page = "Admin"  # Set page to Admin
+            st.session_state.logged_in = True
+            st.session_state.page = "Admin"
         elif role == "user":
             st.success(f"Logged in as User: {st.session_state.username}")
-            st.session_state.role = "user"  # Store role in session state
-            st.session_state.logged_in = True  # Mark the user as logged in
-            st.session_state.page = "User"  # Set page to User
+            st.session_state.logged_in = True
+            st.session_state.page = "User"
         else:
             st.error("Invalid credentials. Please try again.")
 
+# Admin/User page redirection
 elif st.session_state.page == "Admin" and st.session_state.role == "admin":
-    import page.admin  # Import admin page
-    page.admin.admin_page()  # Navigate to Admin page
+    import page.admin
+    page.admin.admin_page()
 
 elif st.session_state.page == "User" and st.session_state.role == "user":
-    import page.user  # Import user page
-    page.user.user_page()  # Navigate to User page
+    import page.user
+    page.user.user_page()
 
-else:
-    st.error("Something went wrong. Please try logging in again.")
+#__________________________________________________________________________________________________________________________________________________________________
+# import streamlit as st
+# from page.db import get_connection
+
+# # Login function to authenticate user and fetch details
+# def login(email, password):
+#     connection = get_connection()
+#     if connection:
+#         try:
+#             query = "SELECT employee_name, email, role FROM employees WHERE email = %s AND password = %s;"
+#             cursor = connection.cursor() # middleman to send the query from streamlit to mysql server
+#             cursor.execute(query, (email, password)) # execution is done here 
+#             result = cursor.fetchone()  # Fetch the first row
+#             cursor.close()
+#             connection.close() # used to close connectivity made by connection.cursor() from streamlit to mysql server
+#             if result:
+#                 # Store user details in session state
+#                 st.session_state.username = result[0]  # Store the user's name
+#                 st.session_state.email = result[1]     # Store the user's email
+#                 return result[2]  # Return the user's role (admin/user)
+#             else:
+#                 return None
+#         except Exception as e:
+#             st.error(f"Error during login: {e}")
+#             return None
+#     return None
+
+# # Initialize session state if not already done
+# if "logged_in" not in st.session_state:
+#     st.session_state.logged_in = False
+# if "role" not in st.session_state:
+#     st.session_state.role = None
+# if "username" not in st.session_state:
+#     st.session_state.username = None
+# if "email" not in st.session_state:
+#     st.session_state.email = None
+# if "page" not in st.session_state:
+#     st.session_state.page = "Login"  # Default to login page
+
+# # Handle page navigation
+# if st.session_state.page == "Login":
+#     # Display login page
+#     st.title("Login Page")
+
+#     email = st.text_input("Email")
+#     password = st.text_input("Password", type="password")
+#     login_button = st.button("Login")
+
+#     # Handle login attempt
+#     if login_button:
+#         role = login(email, password)
+#         if role == "admin":
+#             st.success(f"Logged in as Admin: {st.session_state.username}")
+#             st.session_state.role = "admin"  # Store role in session state
+#             st.session_state.logged_in = True  # Mark the user as logged in
+#             st.session_state.page = "Admin"  # Set page to Admin
+#         elif role == "user":
+#             st.success(f"Logged in as User: {st.session_state.username}")
+#             st.session_state.role = "user"  # Store role in session state
+#             st.session_state.logged_in = True  # Mark the user as logged in
+#             st.session_state.page = "User"  # Set page to User
+#         else:
+#             st.error("Invalid credentials. Please try again.")
+
+# elif st.session_state.page == "Admin" and st.session_state.role == "admin":
+#     import page.admin  # Import admin page
+#     page.admin.admin_page()  # Navigate to Admin page
+
+# elif st.session_state.page == "User" and st.session_state.role == "user":
+#     import page.user  # Import user page
+#     page.user.user_page()  # Navigate to User page
+
+# else:
+#     st.error("Something went wrong. Please try logging in again.")
 
 #----------------------------------------------------------------------------------------------------------
